@@ -1,0 +1,7 @@
+src/node_modules/
+authenticator/node_modules/
+mailer/node_modules/
+rasp/node_modules/
+score/node_modules/
+tpu_api/node_modules/
+vk_bot/node_modules/

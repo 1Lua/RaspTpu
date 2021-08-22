@@ -1,0 +1,16 @@
+{
+  "name": "rasptpusrc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "connector.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "mrf",
+  "license": "ISC",
+  "dependencies": {
+    "node-rsa": "^1.1.1",
+    "ws": "^8.2.0",
+    "wss": "^3.3.4"
+  }
+}
