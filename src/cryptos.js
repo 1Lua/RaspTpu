@@ -37,6 +37,7 @@ class Cryptos{
 let argv = process.argv
 switch(argv[2]){
     case "genkeys": {
+            console.log("Создается пара ключей...")
             let private_filename    = argv[3]   || "private.pem"
             let public_filename     = argv[4]   || "public.pem"
             let path                = argv[5]   || ""
@@ -44,6 +45,8 @@ switch(argv[2]){
             let keys = Cryptos.generatePair()
             fs.writeFileSync(dir + path + private_filename, keys.privateKey)
             fs.writeFileSync(dir + path + public_filename, keys.publicKey)
+            console.log("Приватный ключ сохранен в файле " + path + private_filename)
+            console.log("Публичный ключ сохранен в файле " + path + public_filename)
         break
     }
     case undefined:{

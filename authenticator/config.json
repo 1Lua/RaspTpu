@@ -1,5 +1,5 @@
 {
-    "https_key_file"    : "https.key",
-    "https_cert_file"   : "https.cert",
+    "https_key_file"    : "https_key.pem",
+    "https_cert_file"   : "https_cert.pem",
     "https_port"        : 8080
 }
