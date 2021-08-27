@@ -36,3 +36,5 @@ class Accounter extends DB_Mngr{
     }
 
 }
+
+exports["Accounter"] = Accounter
