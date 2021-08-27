@@ -1,7 +1,8 @@
 const WebSocket = require("ws")
 
 class Connector{
-    constructor(){
+    constructor(name){
+        this.name = name
         this.message_handler = (message, ws)    =>{}
         this.package_handler = (name, data, ws) =>{}
     }
@@ -45,7 +46,7 @@ class Connector{
                 message = String(message)
                 if(!client.logined){
                     if(message == this.password){
-                        console.log("слушатель подключен.")
+                        console.log("Слушатель подключен")
                         client["logined"] = true
                         client.sendPackage = (name, data) => {this.sendPackage(client, name, data)}
                     }else{
@@ -61,9 +62,11 @@ class Connector{
 
     // client block
     connect(ws_adr, ws_pass){
+        console.log("Подключение к "+ this.name)
         this.ws = new WebSocket(ws_adr)
         this.ws.sendPackage = (name, data) => {this.sendPackage(this.ws, name, data)}
         this.ws.on("open", (ws)=>{
+            console.log("Соединение с " + this.name + " установлено")
             this.work = true
             this.ws.send(ws_pass)
         })
@@ -74,8 +77,16 @@ class Connector{
 
         this.ws.on("close", ()=>{
             this.work = false
+            console.log("Нет соединения с "+ this.name)
+            setTimeout(()=>{
+                delete this.ws
+                this.connect(ws_adr, ws_pass)
+            }, 1000)
         })
-        return this
+
+        this.ws.on("error", err=>{
+            this.ws.close()
+        })
     }
 
     connect_ready(){ // use it like: "await connector_object.connect_ready(); ..."
