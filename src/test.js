@@ -1,10 +1,16 @@
-/*const {Connector} = require("./connector")
+const {Connector} = require("./connector")
 
-var connector = new Connector()
-connector.createServer("8888")*/
+const agent = new Connector().connect("ws://localhost:7001", "12345")
 
-const https = require("https")
+agent.connect_ready().then(()=>{
+    agent.ws.sendPackage("create_session", {vk_id: 229, vk_name: "qwerty", vk_photo: "photo"})
+})
 
-const server = new https.Server({
-    
+agent.onPackage((name, data, ws)=>{
+    switch(name){
+        case "on_session_created": {
+            console.log(data)
+            break
+        }
+    }
 })
