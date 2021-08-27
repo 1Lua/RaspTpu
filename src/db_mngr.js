@@ -1,4 +1,5 @@
 const {MongoClient} = require("mongodb")
+const {ObjectId}    = require("mongodb")
 
 class DB_Mngr{
 
@@ -41,4 +42,5 @@ class DB_Mngr{
     }
 } 
 
-exports["DB_Mngr"] = DB_Mngr
+exports["DB_Mngr"]  = DB_Mngr
+exports["ObjectId"] = ObjectId
