@@ -1,0 +1,6 @@
+{
+    "vk_token"              : "0987534f35974cab88a56774d3d499472433d26a245757ec5aafa887e4e81892d1b5f0bd3033293c270f0",
+    "authenticator_ws_adr"  : "ws://localhost:7001",
+    "authenticator_ws_pass" : "12345",
+    "mongodb_url"           : "mongodb://localhost:27017/"
+}

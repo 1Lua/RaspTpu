@@ -15,12 +15,18 @@ class Connector{
         this.message_handler = func
     }
 
-    sendPackage(ws, name, data){
-        ws.send(JSON.stringify({
-            type: "package",
-            name: name, 
-            data: data
-        }))
+    async sendPackage(ws, name, data){
+        return new Promise((resolve, reject)=>{
+            if(ws.readyState == WebSocket.OPEN){
+                ws.send(JSON.stringify({
+                    type: "package",
+                    name: name, 
+                    data: data
+                }))
+                resolve()
+            }else
+                reject("socket not ready")
+        })
     }
 
     readMessage(message, ws){
@@ -47,6 +53,7 @@ class Connector{
                 if(!client.logined){
                     if(message == this.password){
                         console.log("Слушатель подключен")
+
                         client["logined"] = true
                         client.sendPackage = (name, data) => {this.sendPackage(client, name, data)}
                     }else{
@@ -58,6 +65,16 @@ class Connector{
             })
         })
         return this
+    }
+
+    async sendPackageToListeners(name, data){
+        try{
+            this.server.clients.forEach((ws)=>{
+                this.sendPackage(ws, name, data)
+            })
+        }catch(err){
+
+        }
     }
 
     // client block

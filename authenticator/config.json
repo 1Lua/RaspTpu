@@ -5,5 +5,8 @@
     "mongodb_url"       : "mongodb://localhost:27017/",
     "session_time"      : 300000,
     "websocket_port"    : 7001,
-    "ws_password"       : "12345"
+    "ws_password"       : "12345",
+    "self_url"          : "http://localhost:8080",
+    "private_key"       : "private.pem",
+    "public_key"        : "public.pem"
 }

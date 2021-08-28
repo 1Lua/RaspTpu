@@ -21,6 +21,7 @@
 <!--===============================================================================================-->
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
+	<link rel="stylesheet" type="text/css" href="css/loading_animation.css">
 <!--===============================================================================================-->
 </head>
 <body>
@@ -28,7 +29,14 @@
 	<div class="limiter">
 		<div class="container-login100" style="background-image: url('images/img-01.jpg');">
 			<div class="wrap-login100 p-t-190 p-b-30">
-				<form class="login100-form validate-form">
+				<div id="loading">
+					<div class="loader">
+						<div class="inner one"></div>
+						<div class="inner two"></div>
+						<div class="inner three"></div>
+					</div>
+				</div>
+				<form class="login100-form validate-form" id="login_form">
 					<div class="login100-form-avatar">
 						<img src="images/avatar-01.jpg" alt="AVATAR">
 					</div>
@@ -54,12 +62,15 @@
 					</div>
 
 					<div class="container-login100-form-btn p-t-10">
-						<button class="login100-form-btn">
+						<button class="login100-form-btn" type="button">
 							Войти
 						</button>
 					</div>
 
 					<div class="text-center w-full p-t-25 p-b-230">
+						<p class="txt1" id="login_answer" style="font-weight: 600">Успешный вход!</p>
+						<br>
+
 						<a href="#" class="txt1">
 							Пользовательское соглашение
 						</a>
