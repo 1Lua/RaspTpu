@@ -43,6 +43,13 @@ class VKBot{
         return " "+smile
     }
 
+    negativeSmile(){
+        let smiles = ['😔','😢','😭','🙁','☹','😟','🤦‍♂']
+        let index  = Date.now()%smiles.length
+        let smile  = smiles[index]
+        return " "+smile
+    }
+
     getContextCommand(context){
         if(context.message.payload){
             let payload = context.message.payload
@@ -64,6 +71,7 @@ class VKBot{
     }
 
     async message_handle(context){
+
         if(context.peerType == "user"){ // если сообщение внутри диалога с пользователем
             let vk_id       = context.peerId
             let user_data   = await accounter.findUser({vk_id: vk_id})
@@ -90,6 +98,8 @@ class VKBot{
         let command = this.getContextCommand(context)
 
         switch(command){ // выполнение команды
+
+
             case "main_menu":{ // открыть главное меню
                 this.showMenu(user_data, "main")
                 return
@@ -132,9 +142,9 @@ class VKBot{
                                         accounter.updateUserInfo(user_data, {rasp_notifications: !user_data.rasp_notifications})
                                         user_data.rasp_notifications = !user_data.rasp_notifications
                                         if(user_data.rasp_notifications){
-                                            context.send("Оповещения о расписании включены"+this.positiveSmile())
+                                            await context.send("Оповещения о расписании включены"+this.positiveSmile())
                                         }else{
-                                            context.send("Оповещения о расписании отключены"+this.positiveSmile())
+                                            await context.send("Оповещения о расписании отключены"+this.negativeSmile())
                                         }
                                         this.showMenu(user_data, "notifications")
                                     }else{
@@ -147,9 +157,9 @@ class VKBot{
                                         accounter.updateUserInfo(user_data, {score_notifications: !user_data.score_notifications})
                                         user_data.score_notifications = !user_data.score_notifications
                                         if(user_data.score_notifications){
-                                            context.send("Оповещения об успеваемости включены"+this.positiveSmile())
+                                            await context.send("Оповещения об успеваемости включены"+this.positiveSmile())
                                         }else{
-                                            context.send("Оповещения об успеваемости отключены"+this.positiveSmile())
+                                            await context.send("Оповещения об успеваемости отключены"+this.negativeSmile())
                                         }
                                         this.showMenu(user_data, "notifications")
                                     }else{
@@ -162,9 +172,11 @@ class VKBot{
                                         accounter.updateUserInfo(user_data, {mail_notifications: !user_data.mail_notifications, messagecount: undefined})
                                         user_data.mail_notifications = !user_data.mail_notifications
                                         if(user_data.mail_notifications){
-                                            context.send("Оповещения о новых письмах включены"+this.positiveSmile())
+                                            mailer.sendPackage(mailer.ws, "add_vk_user", {vk_id: user_data.vk_id})
+                                            await context.send("Оповещения о новых письмах включены"+this.positiveSmile())
                                         }else{
-                                            context.send("Оповещения о новых письмах отключены"+this.positiveSmile())
+                                            mailer.sendPackage(mailer.ws, "remove_vk_user", {vk_id: user_data.vk_id})
+                                            await context.send("Оповещения о новых письмах отключены"+this.negativeSmile())
                                         }
                                         this.showMenu(user_data, "notifications")
                                     }else{
@@ -173,7 +185,19 @@ class VKBot{
                                     break
                                 }
                             }
+                            break
                         }
+            
+            case "letter_show_text":{ // показать текст письма
+                let item = this.getContextItem(context) // id письма
+                mailer.sendPackage(mailer.ws, "get_vkuser_letter_text",{
+                    vk_id       : context.peerId,
+                    letter_id   : item
+                }).catch(err=>{
+                    this.onGetLetterTextFail(context.peerId, item)
+                })
+                break
+            }
         }
 
         let chat_status = user_data.chat_status
@@ -452,6 +476,35 @@ class VKBot{
         }
     }
 
+    async onGetLetterText(vk_id, letter_text){
+        this.vk.api.messages.send({
+            message     : letter_text,
+            random_id   : this.random(),
+            peer_id     : vk_id,
+        })
+    }
+
+    async onGetLetterTextFail(vk_id, letter_id, err){
+        await this.vk.api.messages.send({
+            message     : "Не удалось получить текст сообщения, пожалуйста, перейдите по ссылке " + this.negativeSmile(),
+            random_id   : this.random(),
+            peer_id     : vk_id,
+            keyboard    : Keyboard.builder()
+                .inline(true)
+                .urlButton({
+                    label   : "Открыть",
+                    url     : "https://mail2.tpu.ru/rcmail/?_task=mail&_action=show&_uid="+letter_id+"&_mbox=INBOX"
+                })
+        })
+        if(err){
+            this.vk.api.messages.send({
+                message     : err + this.negativeSmile(),
+                random_id   : this.random(),
+                peer_id     : vk_id,
+            })
+        }
+    }
+    //
     async onSuccessAuthorization(vk_id, login){ // событие при успешной авторизации пользователя
         this.vk.api.messages.send({
             message     : `Вы успешно авторизовались под логином ${login} ${this.positiveSmile()}`,
@@ -461,6 +514,36 @@ class VKBot{
         let user_data = await accounter.findUser({vk_id:vk_id}) 
         accounter.updateUserInfo(user_data, {authorized:true})  // устанавливаем статус "Авторизован"
         this.showMenu(user_data, "settings")                    // открыть меню настроек
+    }
+
+    async onNewUserLetter(vk_id, mail_data){ // mail_data:{id, header, from, date, seen}
+        this.api.messages.send({
+            message: `📬 Новое письмо на почте.\nОт: `+mail_data.from+`\nДата: `+mail_data.date+`\nТема: `+mail_data.header,
+            random_id: this.random(),
+            peer_id: vk_id,
+            keyboard: Keyboard.builder()
+            .textButton({
+                label: "Показать текст сообщения",
+                payload: {
+                    command: "letter_show_text",
+                    item: mail_data.id
+                }
+            })
+            .row()
+            .textButton({
+                label: "Прочитано",
+                payload: {
+                    command: "mark_letter_as_read",
+                    item: mail_data.id
+                }
+            })
+            .urlButton({
+                label: "Открыть",
+                url: "https://mail2.tpu.ru/rcmail/?_task=mail&_action=show&_uid="+mail_data.id+"&_mbox=INBOX",
+                color: Keyboard.POSITIVE_COLOR
+            })
+            .inline(true)
+        })
     }
 
 }
@@ -482,6 +565,27 @@ authenticator.onPackage((name, data, ws)=>{
 
         case "success_vk_auth":{
             vk_bot.onSuccessAuthorization(data.vk_id, data.login)
+            break
+        }
+    }
+})
+
+const mailer    = new Connector("mailer")
+mailer.connect(config.mailer_ws_adr, config.mailer_ws_pass)
+mailer.onPackage(async (name, data, ws)=>{
+    switch(name){
+        case "new_vkuser_letter":{ // data: {user_data, mail_data:{id, header, from, date, seen}}
+            vk_bot.onNewUserLetter(data.user_data.vk_id, data.mail_data)
+            break
+        }
+
+        case "vk_show_letter_text":{ // data: {vk_id, letter_text}
+            vk_bot.onGetLetterText(data.vk_id, data.letter_text)
+            break
+        }
+
+        case "fail_vk_show_letter_text":{ // {vk_id, letter_id, ?err}
+            vk_bot.onGetLetterTextFail(data.vk_id, data.letter_id, data.err)
             break
         }
     }

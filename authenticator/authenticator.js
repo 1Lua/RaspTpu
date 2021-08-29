@@ -45,6 +45,10 @@ class VKList extends DB_Mngr{
 		super(mongo_url, db_name, collection_name)
 	}
 
+	async getUser(vk_id){
+		return await this.collection.findOne({vk_id: vk_id})
+	}
+
 	async addUser(vk_id, username, password){
 		await this.removeUser(vk_id)
 		let data = {
@@ -62,7 +66,6 @@ class VKList extends DB_Mngr{
 const vk_list	= new VKList(config.mongodb_url, "Authenticator", "vk_list")
 
 // connector
-
 const connector	= new Connector().createServer(config.websocket_port, config.ws_password)
 
 connector.onPackage(async(name, data, ws)=>{
@@ -74,12 +77,28 @@ connector.onPackage(async(name, data, ws)=>{
 				vk_id		: data.vk_id,
 				url			: config.self_url + "/vkauth?id="+session_id
 			})
+			break
+		}
+		
+		case "get_vkuser_login":{ // data: {vk_id}
+			let user = await vk_list.getUser(data.vk_id) // получение данных из vk_list 
+			if(user.login_data){
+				let login_data = cryptos.decrypt(user.login_data) // дешифрование данных
+				login_data = JSON.parse(login_data)
+				ws.sendPackage("vkuser_login_data",{
+					vk_id		: data.vk_id,
+					login		: login_data.username,
+					password	: login_data.password
+				})
+			}
+			break
 		}
 	}
 })
 
 
 // express application
+{
 const app     = express()
 
 app.use(express.static('public/vk_auth'));
@@ -141,3 +160,4 @@ app.listen(config.https_port, () => {
 	console.log(`Example app listening at http://localhost:${config.https_port}`)
 })
 
+}
