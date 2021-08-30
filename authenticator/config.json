@@ -1,12 +1,10 @@
 {
-    "https_key_file"    : "https_key.pem",
-    "https_cert_file"   : "https_cert.pem",
-    "https_port"        : 8080,
+    "https_port"        : 443,
     "mongodb_url"       : "mongodb://localhost:27017/",
     "session_time"      : 300000,
     "websocket_port"    : 7001,
     "ws_password"       : "12345",
-    "self_url"          : "http://localhost:8080",
+    "self_url"          : "http://localhost:443",
     "private_key"       : "private.pem",
     "public_key"        : "public.pem"
 }

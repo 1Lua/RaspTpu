@@ -1,12 +1,15 @@
 const config    	= require("./config.json")
 const express   	= require("express")
 const fs			= require("fs")
+const https 		= require("https")
 const {Cryptos}		= require("./../src/cryptos")
 const {DB_Mngr} 	= require("./../src/db_mngr")
 const {ObjectId}	= require("./../src/db_mngr")
 const {Connector}	= require("./../src/connector")
 const {MailTPUapi}	= require("./../tpu_api/MailTPUapi")
 
+const https_key		= fs.readFileSync("https_key.pem")
+const https_cert	= fs.readFileSync("https_cert.pem")
 const private_key 	= fs.readFileSync(config.private_key)
 const public_key 	= fs.readFileSync(config.public_key)
 const cryptos		= new Cryptos(private_key, public_key)
@@ -98,7 +101,6 @@ connector.onPackage(async(name, data, ws)=>{
 
 
 // express application
-{
 const app     = express()
 
 app.use(express.static('public/vk_auth'));
@@ -156,8 +158,12 @@ app.get("/vkauth/login", async(req, res)=>{ // авторизация
 	}
 })
 
-app.listen(config.https_port, () => {
-	console.log(`Example app listening at http://localhost:${config.https_port}`)
+const https_server = https.createServer({key: https_key, cert: https_cert}, app)
+
+https_server.listen(config.https_port, ()=>{
+	console.log(`Https server listening at http://localhost:${config.https_port}`)
 })
 
-}
+/*app.listen(config.https_port, () => {
+	console.log(`Example app listening at http://localhost:${config.https_port}`)
+})*/
