@@ -464,7 +464,7 @@ class VKBot{
                     message     : "Авторизация через ВКонтакте",
                     random_id   : this.random(),
                     peer_id     : vk_id,
-                    keyboard    : Keyboard.builder().urlButton({
+                    keyboard    : Keyboard.builder().inline(true).urlButton({
                         label   : "Перейти на страницу",
                         url     : url
                     })
