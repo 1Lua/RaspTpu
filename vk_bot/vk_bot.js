@@ -256,10 +256,32 @@ class VKBot{
             }
 
             case "score":{
+                this.vk.api.messages.send({
+                    message     : "Модуль Успеваемсти в разработке"+this.positiveSmile()+"\nУзнать о модуле можно тут: ",
+                    random_id   : this.random(),
+                    peer_id     : user_data.vk_id,
+                    keyboard    : Keyboard.builder()
+                        .inline(true)
+                        .urlButton({
+                            label   : "Планируемые нововведения",
+                            url     : "https://vk.com/wall-204356004_1"
+                        })
+                })
                 break
             }
 
             case "rasp":{
+                this.vk.api.messages.send({
+                    message     : "Модуль Расписания в разработке"+this.positiveSmile()+"\nУзнать о модуле можно тут: ",
+                    random_id   : this.random(),
+                    peer_id     : user_data.vk_id,
+                    keyboard    : Keyboard.builder()
+                        .inline(true)
+                        .urlButton({
+                            label   : "Планируемые нововведения",
+                            url     : "https://vk.com/wall-204356004_1"
+                        })
+                })
                 break
             }
 
