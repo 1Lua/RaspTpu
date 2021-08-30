@@ -455,20 +455,20 @@ class VKBot{
         try{
             let user_data = await accounter.findUser({vk_id: vk_id})
             if(user_data.chat_status == "authorization"){
-                this.vk.api.messages.send({
+                /*this.vk.api.messages.send({
                     message     : url,
                     random_id   : this.random(),
                     peer_id     : vk_id,
-                })
-                /*this.vk.api.messages.send({
-                    message     : "Страница авторизации",
+                })*/
+                this.vk.api.messages.send({
+                    message     : "Авторизация через ВКонтакте",
                     random_id   : this.random(),
                     peer_id     : vk_id,
                     keyboard    : Keyboard.builder().urlButton({
-                        label   : "Открыть",
+                        label   : "Перейти на страницу",
                         url     : url
                     })
-                })*/
+                })
             }
 
         }catch(error){
