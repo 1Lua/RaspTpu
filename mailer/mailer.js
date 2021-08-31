@@ -239,7 +239,7 @@ class MailAgent{
             .then(res=>{ // Пользователь прошел авторизацию, добавляем в рабочую очередь
                 this.addToWorkQueue(user)
             })
-            .catch(err=>{
+            .catch(async (err)=>{
                 switch(err){
                     case "err login":{ // логин и пароль в бд неверный
                         switch(user.user_data.type){
