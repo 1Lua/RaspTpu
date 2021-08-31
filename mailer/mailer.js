@@ -112,6 +112,7 @@ class MailAgent{
                         throw "mail is undefined"
                     }
                 }catch(err){
+                    console.log("err " + user.login, err)
                     this.removeFromWorkQueue(user)
                     this.addToLoginQueue(user)
                     continue
