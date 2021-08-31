@@ -156,7 +156,7 @@ class MailTPUapi{
             let req = https.get({
                 host: "mail2.tpu.ru",
                 //path: "/rcmail/?_task=mail&_refresh=1&_mbox=INBOX&_action=list&_remote=1&"+"_unlock=loading"+ time+"&_=" + (time+6),
-                path: "https://mail2.tpu.ru/rcmail/?_task=mail&_cols=threads,subject,from,date,size,attachment,flag&_sort=_DESC&_mbox=INBOX&_action=list&_remote=1&_unlock=loading"+ time+"&_=" + (time+6),
+                path: "https://mail2.tpu.ru/rcmail/?_task=mail&_cols=threads,subject,from,date,size,attachment,flag&_sort=date_DESC&_mbox=INBOX&_action=list&_remote=1&_unlock=loading"+ time+"&_=" + (time+6),
                 headers:{
                     "Accept": "application/json, text/javascript, */*; q=0.01",
                     "Accept-Encoding": "gzip, deflate, br",
