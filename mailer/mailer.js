@@ -51,7 +51,12 @@ class User{ // user = new User("mms25", "11jUcV4"); await user.authotize2()
             let id      = Number(match[1])
             let s       = str.match('add_message_row.' + id + '.+')[0]
             let header  = eval("'"+s.match(/subject":"(.+)","from/)[1]+"'")
-            let from    = eval("'"+s.match(/rcmContactAddress\\\"\>(.+)\<\\\/span\>\<\\\/span/)[1]+"'")
+            let from    = ""
+            try {
+                from    = eval("'"+s.match(/rcmContactAddress\\\"\>(.+)\<\\\/span\>\<\\\/span/)[1]+"'")
+            } catch (error) {
+                
+            }
             let date    = eval("'"+s.match(/date":"(.+)","size/)[1]+"'")
             let seen    = Boolean(s.match(/seen":1/))
             mails.push({id, header, from, date, seen})
