@@ -568,6 +568,14 @@ class VKBot{
         })
     }
 
+    async onUncorrectLoginData(vk_id){
+        this.vk.api.messages.send({
+            message     : "Ваши данные от учетной записи неверные\nПочтовые оповещения отключены",
+            peer_id     : vk_id,
+            random_id   : this.random()
+        })
+    }
+
 }
 
 const vk_bot = new VKBot()
@@ -596,6 +604,11 @@ const mailer    = new Connector("mailer")
 mailer.connect(config.mailer_ws_adr, config.mailer_ws_pass)
 mailer.onPackage(async (name, data, ws)=>{
     switch(name){
+        case "vk_uncorrect_login":{ // data: {vk_id}
+            vk_bot.onUncorrectLoginData(data.vk_id)
+            break
+        }
+
         case "new_vkuser_letter":{ // data: {user_data, mail_data:{id, header, from, date, seen}}
             vk_bot.onNewUserLetter(data.user_data.vk_id, data.mail_data)
             break

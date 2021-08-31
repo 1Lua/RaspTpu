@@ -241,7 +241,18 @@ class MailAgent{
             .catch(err=>{
                 switch(err){
                     case "err login":{ // логин и пароль в бд неверный
-                        
+                        switch(user.user_data.type){
+                            case "VK":{
+                                let vk_id = user.user_data.vk_id
+                                await accounter.collection.updateOne({vk_id: vk_id},{
+                                    authorized          : false,
+                                    mail_notifications  : false
+                                })
+                                connector.sendPackageToListeners("vk_uncorrect_login",{vk_id: vk_id})
+                                break
+                            }
+                        }
+
                         break
                     }
                     case "no connect":{ // нет соединения с mail2.tpu.ru пользователь встает на авторизацию заново
