@@ -16,13 +16,12 @@ var getUrlParameter = function getUrlParameter(sParam) {
 
 $(document).ready(()=>{
     //$(".login100-form-avatar > img:nth-child(1)").hide()
-    $(".login100-form-avatar > img:nth-child(1)").attr({"src": "images/avatar-01.jpg"})
     $("#loading").hide()
     //$("#login_answer").hide()
     let id = getUrlParameter("id")
     $.get("/vkauth/data?id="+id, (data)=>{
         try {
-            $(".login100-form-avatar > img:nth-child(1)").attr("src", data.vk_photo)
+            //$(".login100-form-avatar > img:nth-child(1)").attr("src", data.vk_photo)
             //$(".login100-form-avatar > img:nth-child(1)").toggle(150)
             $(".login100-form-title").html(data.vk_name)
         }catch(error){
