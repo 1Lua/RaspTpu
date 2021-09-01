@@ -292,7 +292,7 @@ class VKBot{
             }
 
             case "rasp":{
-                this.vk.api.messages.send({
+                await this.vk.api.messages.send({
                     message     : "Модуль Расписания в разработке"+this.positiveSmile()+"\nУзнать о модуле можно тут: ",
                     random_id   : this.random(),
                     peer_id     : user_data.vk_id,
