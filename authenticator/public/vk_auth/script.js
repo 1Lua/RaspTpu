@@ -16,6 +16,7 @@ var getUrlParameter = function getUrlParameter(sParam) {
 
 $(document).ready(()=>{
     //$(".login100-form-avatar > img:nth-child(1)").hide()
+    $(".login100-form-avatar > img:nth-child(1)").attr({"src": "images/avatar-01.jpg"})
     $("#loading").hide()
     //$("#login_answer").hide()
     let id = getUrlParameter("id")
