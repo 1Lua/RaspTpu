@@ -306,7 +306,7 @@ class VKBot{
 
                 if(user_data.group_url && user_data.group_name){
                     this.vk.api.messages.send({
-                        message     : `Расписание ${user_data.group_name} на сегодня.`,
+                        message     : `Расписание ${user_data.group_name} на сегодня ` + this.positiveSmile(),
                         random_id   : this.random(),
                         peer_id     : user_data.vk_id,
                         keyboard    : Keyboard.builder()
