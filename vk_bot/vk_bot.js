@@ -1,4 +1,5 @@
 const {VK, API, Upload, Updates, Keyboard, Params } = require("vk-io")
+const {RaspTPUapi}  = require("./../tpu_api/RaspTPUapi")
 const {Connector}   = require("./../src/connector")
 const {Accounter}   = require("./../src/accounter")
 const config        = require("./config.json")
@@ -120,6 +121,12 @@ class VKBot{
                     return
                 }
 
+                    case "change_group":{ // указать группу
+                        await accounter.updateUserInfo(user_data, {chat_status: "change_group"})
+                        context.send("Введите номер вашей группы")
+                        return
+                    }
+
                     case "authorize":{ // начать процедуру авторизации
                         if(user_data.confirm_conditions){ // пользователь ознакомлен с соглашением
                             this.startUserAuthorization(user_data, context)
@@ -218,6 +225,20 @@ class VKBot{
                 case "settings":{ // пользователь находится в меню настроек
                     break
                 }
+                    case "change_group":{ // пользователь указывает группу
+                        RaspTPUapi.getGroupHashLink(context.text)
+                        .then(url=>{
+                            accounter.updateUserInfo(user_data, {
+                                group_name  : context.text,
+                                group_url   : url
+                            })
+                            context.send("Вы успешно поменяли группу, теперь вы можете получить прямую ссылку на расписание в главном меню " + this.positiveSmile())
+                        })
+                        .catch(err=>{
+                            context.send("Группа не найдена " + this.negativeSmile() + "\nПопробуйте ещё раз")
+                        })
+                        break
+                    }
 
                     case "conditions":{ // пользователь ознакамливается с пользовательским соглашением
                         if(context.text.toLowerCase() == "подтверждаю"){
@@ -282,6 +303,20 @@ class VKBot{
                             url     : "https://vk.com/wall-204356004_1"
                         })
                 })
+
+                if(user_data.group_url && user_data.group_name){
+                    this.vk.api.messages.send({
+                        message     : `Расписание ${user_data.group_name} на сегодня.`,
+                        random_id   : this.random(),
+                        peer_id     : user_data.vk_id,
+                        keyboard    : Keyboard.builder()
+                            .inline(true)
+                            .urlButton({
+                                label   : "Перейти на сайт rasp.tpu.ru",
+                                url     : user_data.group_url
+                            })
+                    })
+                }
                 break
             }
 
@@ -526,6 +561,7 @@ class VKBot{
             })
         }
     }
+
     //
     async onSuccessAuthorization(vk_id, login){ // событие при успешной авторизации пользователя
         this.vk.api.messages.send({
@@ -605,7 +641,7 @@ mailer.connect(config.mailer_ws_adr, config.mailer_ws_pass)
 mailer.onPackage(async (name, data, ws)=>{
     switch(name){
         case "vk_uncorrect_login":{ // data: {vk_id}
-            vk_bot.onUncorrectLoginData(data.vk_id)
+            //vk_bot.onUncorrectLoginData(data.vk_id)
             break
         }
 
