@@ -1,5 +1,5 @@
 vk_bot/config.json
-vk_bot/private.pem
-vk_bot/public.pem
-vk_bot/new_private.pem
-vk_bot/new_public.pem
+authenticator/private.pem
+authenticator/public.pem
+authenticator/new_private.pem
+authenticator/new_public.pem
