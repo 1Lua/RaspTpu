@@ -1,1 +1,5 @@
 vk_bot/config.json
+vk_bot/private.pem
+vk_bot/public.pem
+vk_bot/new_private.pem
+vk_bot/new_public.pem
