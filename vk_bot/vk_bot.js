@@ -133,12 +133,12 @@ class VKBot{
                         }else{
                             this.showMenu(user_data, "conditions")
                         }
-                        break
+                        return
                     }
 
                     case "notifications_menu":{ // открыть меню оповещений
                         this.showMenu(user_data, "notifications")
-                        break
+                        return
                     }
                         
                         case "switch_notify":{ // включение или отключение оповещений
