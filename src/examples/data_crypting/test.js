@@ -9,9 +9,9 @@ const cryptos = new Cryptos(privateKey, publicKey)      // creating Cryptos obje
 let string_data     = "Hello world!"
 
 let encrypted_data  = cryptos.encrypt(string_data)      // encrypting data
-console.log("encrypted: " + encrypted_data)
+console.log("encrypted: " + encrypted_data)             // output: "encrypted:  LxcrqZYgthzOOlW0s4LiD..."
 
 let decrypted_data  = cryptos.decrypt(encrypted_data)   // decrypting data
-console.log("decrypted: " + decrypted_data)
+console.log("decrypted: " + decrypted_data)             // output: "decrypted: Hello world!"
 
                                                         // Note:  x == cryptos.decrypt(cryptos.encrypt(x))
