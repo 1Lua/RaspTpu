@@ -292,31 +292,9 @@ class VKBot{
             }
 
             case "rasp":{
-                await this.vk.api.messages.send({
-                    message     : "Модуль Расписания в разработке"+this.positiveSmile()+"\nУзнать о модуле можно тут: ",
-                    random_id   : this.random(),
-                    peer_id     : user_data.vk_id,
-                    keyboard    : Keyboard.builder()
-                        .inline(true)
-                        .urlButton({
-                            label   : "Планируемые нововведения",
-                            url     : "https://vk.com/wall-204356004_1"
-                        })
+                this.vk.api.messages.send({
+                    message     : "Меню оповещений"
                 })
-
-                if(user_data.group_url && user_data.group_name){
-                    this.vk.api.messages.send({
-                        message     : `Расписание ${user_data.group_name} на сегодня ` + this.positiveSmile(),
-                        random_id   : this.random(),
-                        peer_id     : user_data.vk_id,
-                        keyboard    : Keyboard.builder()
-                            .inline(true)
-                            .urlButton({
-                                label   : "Перейти на сайт rasp.tpu.ru",
-                                url     : user_data.group_url
-                            })
-                    })
-                }
                 break
             }
 
