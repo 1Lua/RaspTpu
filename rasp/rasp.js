@@ -1,6 +1,8 @@
 const {RaspTPUapi}  = require("./../tpu_api/RaspTPUapi")
 const {Connector}   = require("./../src/connector")
-const {DB_Mngr}     = require("./../src/db_mngr")
+const {Accounter}   = require("./../src/accounter")
+
+const config        = require("./config.json")
 
 class RaspQuery{    
     static findMonth(words){ // поиск месяца в словах
@@ -172,7 +174,32 @@ class RaspQuery{
     }
 }
 
+const accounter = new Accounter(config.mongodb_url)
 
-RaspTPUapi.getGroupRaspByDate("8К04", RaspQuery.query("завтра").date).then(rasp=>{
-    console.log(rasp)
+const connector = new Connector("server")
+connector.createServer(config.ws_port, config.ws_pass)
+
+connector.onPackage((name, data, ws)=>{
+    switch(name){
+        case "get_rasp":{ // data:{user_data, query}
+            try{
+                if(!data.user_data.current_group){
+                    break
+                }
+                let group = data.user_data.current_group
+                let date = RaspQuery.query(data.query).date
+                if(data){
+                    RaspTPUapi.getGroupRaspByDate(group, date).then(rasp=>{
+                        connector.sendPackage(ws, "show_rasp", {
+                            vk_id: data.user_data.vk_id, 
+                            rasp: rasp,
+                            group: group,
+                            date: date
+                        })
+                    }).catch(err=>{})
+                }
+            }catch(err){}
+            break
+        }
+    }    
 })

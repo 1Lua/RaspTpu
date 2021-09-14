@@ -248,6 +248,6 @@ async function main(){
         console.log(Date.now()-start)
     })
 }
-main()
+//main()
 
 exports["RaspTPUapi"] = RaspTPUapi

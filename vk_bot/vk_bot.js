@@ -2,7 +2,9 @@ const {VK, API, Upload, Updates, Keyboard, Params } = require("vk-io")
 const {RaspTPUapi}  = require("./../tpu_api/RaspTPUapi")
 const {Connector}   = require("./../src/connector")
 const {Accounter}   = require("./../src/accounter")
+
 const config        = require("./config.json")
+const kampus        = require("./kampus.json")
 
 class VKBot{
 
@@ -111,9 +113,57 @@ class VKBot{
                     break
                 }
 
+                    case "kampus_map":{ // посмтореть карту кампуса
+                        this.showMenu(user_data, "kampus_map")
+                        return
+                    }
+                    
+                    case "show_kampus":{
+                        let item = this.getContextItem(context)
+                        this.vk.api.messages.send({
+                            message     : kampus[item].name + `\nАдрес: ${kampus[item].adr}`,
+                            random_id   : this.random(),
+                            peer_id     : user_data.vk_id, 
+                            lat         : kampus[item].lat,
+                            long        : kampus[item].long
+                        })
+                        return
+                    }
+
+                    case "change_current_group":{
+                        await accounter.updateUserInfo(user_data, {chat_status: "change_current_group"})
+                        let recent_groups = user_data.recent_groups
+                        let keyboard = Keyboard.builder().inline(true)
+                        if(recent_groups){
+                            for(let i = 0; i < recent_groups.length; i++){
+                                keyboard.textButton({
+                                    label: recent_groups[i]
+                                })
+                            }
+                        }
+
+                        this.vk.api.messages.send({
+                            message     : "Введите номер учебной группы",
+                            random_id   : this.random(),
+                            peer_id     : user_data.vk_id,
+                            keyboard    : keyboard
+                        })
+                        return
+                    }
+
+                    case "rasp_today":{
+                        rasp.sendPackage(rasp.ws, "get_rasp", {user_data, query: "сегодня"})
+                        return
+                    }
+
+                    case "rasp_tomorrow":{
+                        rasp.sendPackage(rasp.ws, "get_rasp", {user_data, query: "завтра"})
+                        return
+                    }
+
                 case "score_menu":{ // открыть меню успеваемости
                     this.showMenu(user_data, "score")
-                    break
+                    return
                 }
 
                 case "settings_menu":{ // открыть меню настроек
@@ -215,8 +265,23 @@ class VKBot{
             }
 
                 case "rasp":{ // пользователь находится в меню расписания
+                    let text = context.text
+                    rasp.sendPackage(rasp.ws, "get_rasp", {user_data, query: text})
+
                     break
                 }
+
+                    case "change_current_group":{ // пользователь указывает номер текущей группы
+                        let text = context.text.toUpperCase()
+                        RaspTPUapi.getGroupHashLink(text).then(async (url)=>{
+                            await accounter.updateUserInfo(user_data, {current_group: text, chat_status: "rasp"})
+                            context.send("Выбрана группа " + text + " " + this.positiveSmile())
+                            this.updateUserRecentGroups(user_data, text)
+                        }).catch(err=>{
+                            context.send("Группа не найдена " + this.negativeSmile() + "\nПопробуйте ещё раз")
+                        })
+                        break
+                    }
 
                 case "score":{ // пользователь находится в меню успеваемости
                     break
@@ -226,13 +291,15 @@ class VKBot{
                     break
                 }
                     case "change_group":{ // пользователь указывает группу
-                        RaspTPUapi.getGroupHashLink(context.text)
-                        .then(url=>{
-                            accounter.updateUserInfo(user_data, {
-                                group_name  : context.text,
+                        let text = context.text
+                        RaspTPUapi.getGroupHashLink(text)
+                        .then(async(url)=>{
+                            await accounter.updateUserInfo(user_data, {
+                                chat_status : "settings",
+                                group_name  : text,
                                 group_url   : url
                             })
-                            context.send("Вы успешно поменяли группу, теперь вы можете получить прямую ссылку на расписание в главном меню " + this.positiveSmile())
+                            context.send("Информация о вашей учебной группе сохранена " + this.positiveSmile())
                         })
                         .catch(err=>{
                             context.send("Группа не найдена " + this.negativeSmile() + "\nПопробуйте ещё раз")
@@ -291,9 +358,33 @@ class VKBot{
                 break
             }
 
+            case "kampus_map":{
+                for(let i = 0; i < kampus.length; i = i + 6){
+                    this.vk.api.messages.send({
+                        message     : "Выберите учебный корпус",
+                        random_id   : this.random(),
+                        peer_id     : user_data.vk_id,
+                        keyboard    : this.genKeyBoard("kampus_map", i)
+                    })
+                }
+
+                break
+            }
+
             case "rasp":{
+                let message = "Меню расписания"
+                if(user_data.group_name){
+                    message += ", группа " + user_data.group_name + " " +this.positiveSmile()
+                }else{
+                    message += ", группа не выбрана\nПожалуйста, укажите вашу основную группу в меню настроек " + this.positiveSmile()
+                }
+
+                await accounter.updateUserInfo(user_data, {chat_status: "rasp", current_group: user_data.group_name})
                 this.vk.api.messages.send({
-                    message     : "Меню оповещений"
+                    message     : message,
+                    random_id   : this.random(),
+                    peer_id     : user_data.vk_id,
+                    keyboard    : this.genKeyBoard("rasp")
                 })
                 break
             }
@@ -381,7 +472,7 @@ class VKBot{
         }
     }
 
-    genKeyBoard(name){
+    genKeyBoard(name, id){
         switch(name){
             case "main": {
                 let builder = Keyboard.builder()
@@ -447,7 +538,66 @@ class VKBot{
                 return builder
 
             }
+
+            case "rasp":{
+                let builder = Keyboard.builder()
+                    .textButton({
+                        label:  'Расписание на сегодня',
+                        payload: {
+                            command: 'rasp_today'
+                        },
+                        color: Keyboard.SECONDARY_COLOR
+                    })
+                    .row()
+                    .textButton({
+                        label:  'Расписание на завтра',
+                        payload: {
+                            command: 'rasp_tomorrow'
+                        },
+                        color: Keyboard.SECONDARY_COLOR
+                    })
+                    .row()
+                    .textButton({
+                        label:  'Выбрать группу',
+                        payload: {
+                            command: 'change_current_group'
+                        },
+                        color: Keyboard.SECONDARY_COLOR
+                    })
+                    .textButton({
+                        label:  'Карта кампуса',
+                        payload: {
+                            command: 'kampus_map'
+                        },
+                        color: Keyboard.SECONDARY_COLOR
+                    })
+                    .row()
+                    .textButton({
+                        label: '🏠 Назад',
+                        payload: {
+                            command: 'main_menu'
+                        },
+                        color: Keyboard.PRIMARY_COLOR
+                    })
+                return builder
+            }
         
+            case "kampus_map":{
+                let builder = Keyboard.builder()
+                for(let i = id; i < kampus.length && i < id+6; i++){
+                    builder.textButton({
+                        label: kampus[i].name,
+                        payload: {
+                            command : "show_kampus",
+                            item    : i
+                        }
+                    })
+                    builder.row()
+                }
+                builder.inline(true)
+                return builder
+            }
+
             case "conditions":{
                 let builder = Keyboard.builder()
                 .urlButton({
@@ -540,6 +690,26 @@ class VKBot{
         }
     }
 
+    async updateUserRecentGroups(user_data, group){
+        let recent_groups = user_data.recent_groups
+
+        if(recent_groups){
+            for(let key in recent_groups){
+                if(recent_groups[key] == group){ // данная группа уже была в списке недавних групп
+                    recent_groups.splice(key, 1)
+                }
+            }
+            if(recent_groups.length >= 3){
+                recent_groups.pop() // удалить последнюю группу
+            }
+            recent_groups.unshift(group) // вставить новую группу
+        }else{
+            recent_groups = [group]
+        }
+
+        await accounter.updateUserInfo(user_data, {recent_groups: recent_groups})
+    }
+
     //
     async onSuccessAuthorization(vk_id, login){ // событие при успешной авторизации пользователя
         this.vk.api.messages.send({
@@ -590,6 +760,14 @@ class VKBot{
         })
     }
 
+    async showUserRasp(vk_id, rasp, group, date){
+        this.vk.api.messages.send({
+            message: `Расписание ${group} на ${date}\n\n` + rasp,
+            random_id: this.random(),
+            peer_id: vk_id
+        })
+    }
+
 }
 
 const vk_bot = new VKBot()
@@ -636,6 +814,17 @@ mailer.onPackage(async (name, data, ws)=>{
         case "fail_vk_show_letter_text":{ // {vk_id, letter_id, ?err}
             vk_bot.onGetLetterTextFail(data.vk_id, data.letter_id, data.err)
             break
+        }
+    }
+})
+
+const rasp = new Connector("rasp")
+rasp.connect(config.rasp_ws_adr, config.rasp_ws_pass)
+rasp.onPackage((name, data, ws)=>{
+    switch(name){
+        case "show_rasp":{ // data:{vk_id, rasp, group, date}
+            let rasp = RaspTPUapi.raspToString(data.rasp)
+            vk_bot.showUserRasp(data.vk_id, rasp, data.group, data.date)
         }
     }
 })

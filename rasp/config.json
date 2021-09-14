@@ -1,0 +1,5 @@
+{
+    "mongodb_url"           : "mongodb://localhost:27017/",
+    "ws_port"               : "7003",
+    "ws_pass"               : "12345"
+}
