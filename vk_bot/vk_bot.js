@@ -88,7 +88,17 @@ class VKBot{
 
     async onMessageFromNewUser(vk_id, context){ // сообщение от нового пользователя
         let user_data = await accounter.addVKUser(vk_id)
-        context.send("Добро пожаловать в RaspBot!")
+        this.vk.api.messages.send({
+            message     : "Добро пожаловать в RaspTPU! " + this.positiveSmile(),
+            random_id   : this.random(),
+            peer_id     : vk_id,
+            keyboard    : Keyboard.builder()
+                .inline(true)
+                .urlButton({
+                    label   : "Руководство по использованию",
+                    url     : "https://vk.com/@rasptpu-kak-polzovatsya-chat-botom-rasptpu"
+                })
+        })
         this.showMenu(user_data, "main")
     }
 
