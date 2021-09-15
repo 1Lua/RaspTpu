@@ -89,15 +89,9 @@ class VKBot{
     async onMessageFromNewUser(vk_id, context){ // сообщение от нового пользователя
         let user_data = await accounter.addVKUser(vk_id)
         this.vk.api.messages.send({
-            message     : "Добро пожаловать в RaspTPU! " + this.positiveSmile(),
+            message     : "Добро пожаловать в RaspTPU!\nhttps://vk.com/@rasptpu-kak-polzovatsya-chat-botom-rasptpu" + this.positiveSmile(),
             random_id   : this.random(),
-            peer_id     : vk_id,
-            keyboard    : Keyboard.builder()
-                .inline(true)
-                .urlButton({
-                    label   : "Руководство по использованию",
-                    url     : "https://vk.com/@rasptpu-kak-polzovatsya-chat-botom-rasptpu"
-                })
+            peer_id     : vk_id
         })
         this.showMenu(user_data, "main")
     }
@@ -204,7 +198,7 @@ class VKBot{
                         case "switch_notify":{ // включение или отключение оповещений
                             let item = this.getContextItem(context)
                             switch(item){
-                                case "rasp":{
+                                /*case "rasp":{
                                     if(user_data.group_checked){
                                         accounter.updateUserInfo(user_data, {rasp_notifications: !user_data.rasp_notifications})
                                         user_data.rasp_notifications = !user_data.rasp_notifications
@@ -233,7 +227,7 @@ class VKBot{
                                         context.send("Для получения уведомлений об успеваемости необходимо пройти авторизацию в меню настроек."+this.positiveSmile())
                                     }
                                     break
-                                }
+                                }*/
                                 case "mail":{
                                     if(user_data.authorized){
                                         accounter.updateUserInfo(user_data, {mail_notifications: !user_data.mail_notifications, messagecount: undefined})
@@ -344,7 +338,7 @@ class VKBot{
         switch(menu){
             case "main":{
                 await accounter.updateUserInfo(user_data, {chat_status: "main"})
-                this.vk.api.messages.send({
+                await this.vk.api.messages.send({
                     message     : "Главное меню",
                     random_id   : this.random(),
                     peer_id     : user_data.vk_id,
@@ -390,11 +384,17 @@ class VKBot{
                 }
 
                 await accounter.updateUserInfo(user_data, {chat_status: "rasp", current_group: user_data.group_name})
-                this.vk.api.messages.send({
+                await this.vk.api.messages.send({
                     message     : message,
                     random_id   : this.random(),
                     peer_id     : user_data.vk_id,
                     keyboard    : this.genKeyBoard("rasp")
+                })
+                this.vk.api.messages.send({
+                    message     : "Выберите день недели",
+                    random_id   : this.random(),
+                    peer_id     : user_data.vk_id,
+                    keyboard    : this.genKeyBoard("rasp_week")
                 })
                 break
             }
@@ -589,6 +589,20 @@ class VKBot{
                         },
                         color: Keyboard.PRIMARY_COLOR
                     })
+                return builder
+            }
+
+            case "rasp_week":{
+                let builder = Keyboard.builder()
+                    .inline(true)
+                    .textButton({label: "Понедельник"})
+                    .textButton({label: "Четверг"})
+                    .row()
+                    .textButton({label: "Вторник"})
+                    .textButton({label: "Пятница"})
+                    .row()
+                    .textButton({label: "Среда"})
+                    .textButton({label: "Суббота"})
                 return builder
             }
         
