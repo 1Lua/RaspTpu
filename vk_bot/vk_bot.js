@@ -259,6 +259,15 @@ class VKBot{
                 })
                 break
             }
+
+            case "mark_letter_as_read":{
+                let item = this.getContextItem(context) // id письма
+                mailer.sendPackage(mailer.ws, "mark_vkuser_letter_as_read", {
+                    vk_id       : context.peerId,
+                    letter_id   : item 
+                }).catch(err=>{})
+                
+            }
         }
 
         let chat_status = user_data.chat_status

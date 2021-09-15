@@ -205,7 +205,8 @@ class MailTPUapi{
                     "Upgrade-Insecure-Requests": "1",
                     "X-Roundcube-Request": req_token,
                     "X-Requested-With": "XMLHttpRequest"
-                }
+                },
+                method: "POST"
             }, result=>{
 
             })
@@ -217,6 +218,7 @@ class MailTPUapi{
                 _unlock	:"loading" + time
             }
             req.write(querystring.stringify(params))
+            req.end()
         })
     }
 

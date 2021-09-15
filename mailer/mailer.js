@@ -225,7 +225,20 @@ class MailAgent{
         }
     }
 
-    
+    async markVKUserLetterAsRead(vk_id, letter_id){
+        let user_data = await accounter.findUser({vk_id: vk_id})
+        let user
+        for(let i = 0; i < this.work_queue.length; i++){
+            let u = this.work_queue[i]
+            if(String(user_data._id) == String(u.user_data._id)){
+                user = u
+            }
+        }
+        if(user){ // user is User class object from work_queue
+            user.markLetter(letter_id)
+        }
+    }
+
     startLogin(){
         const int = 2000
         new Promise(async (resolve, reject)=>{
@@ -337,6 +350,10 @@ connector.onPackage(async(name, data, ws)=>{
 
         case "get_vkuser_letter_text":{ // data:{vk_id, letter_id} // получить текст письма
             mail_agent.sendVKUserLetterText(data.vk_id, data.letter_id)
+        }
+
+        case "mark_vkuser_letter_as_read":{ // data:{vk_id, letter_id}
+            mail_agent.markVKUserLetterAsRead(data.vk_id, data.letter_id)
         }
     }
 })
