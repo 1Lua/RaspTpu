@@ -258,7 +258,7 @@ class MailAgent{
                 this.addToWorkQueue(user)
             })
             .catch(async (err)=>{
-                console.log.length(user.login, err)
+                console.log(user.login, err)
                 switch(err){
                     case "err login":{ // логин и пароль в бд неверный
                         switch(user.user_data.type){
