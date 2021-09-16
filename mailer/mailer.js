@@ -261,14 +261,20 @@ class MailAgent{
                 switch(err){
                     case "err login":{ // логин и пароль в бд неверный
                         switch(user.user_data.type){
+                            
                             case "VK":{
-                                let vk_id = user.user_data.vk_id
-                                await accounter.collection.updateOne({vk_id: vk_id},{
-                                    authorized          : false,
-                                    mail_notifications  : false
-                                })
-                                connector.sendPackageToListeners("vk_uncorrect_login",{vk_id: vk_id})
-                                break
+                                this.addToLoginQueue(user)
+                                /*try{
+                                    let vk_id = user.user_data.vk_id
+                                    await accounter.collection.updateOne({vk_id: user_data.vk_id},{
+                                        authorized          : false,
+                                        mail_notifications  : false
+                                    })
+                                    connector.sendPackageToListeners("vk_uncorrect_login",{vk_id: vk_id})
+                                    break
+                                }catch(err){
+                                    console.log(err)
+                                }*/
                             }
                         }
 
