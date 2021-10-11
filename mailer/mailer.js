@@ -50,8 +50,13 @@ class User{ // user = new User("mms25", "11jUcV4"); await user.authotize2()
         for(let match of matches){
             let id      = Number(match[1])
             let s       = str.match('add_message_row.' + id + '.+')[0]
-            let header  = eval("'"+s.match(/subject":"(.+)","from/)[1]+"'")
-            let from    = ""
+            let header = "?"
+            try {
+                let header  = eval("'"+s.match(/subject":"(.+)","from/)[1]+"'")
+            } catch (error) {
+                
+            }
+            let from    = "?"
             try {
                 from    = eval("'"+s.match(/rcmContactAddress\\\"\>(.+)\<\\\/span\>\<\\\/span/)[1]+"'")
             } catch (error) {
@@ -264,7 +269,7 @@ class MailAgent{
                         switch(user.user_data.type){
                             
                             case "VK":{
-                                this.addToLoginQueue(user)
+                                //this.addToLoginQueue(user)
                                 /*try{
                                     let vk_id = user.user_data.vk_id
                                     await accounter.collection.updateOne({vk_id: user_data.vk_id},{
