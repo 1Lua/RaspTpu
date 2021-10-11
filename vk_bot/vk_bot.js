@@ -11,7 +11,13 @@ class VKBot{
     constructor(){
         this.API_TOKEN  = config.vk_token
         this.vk         = new VK        ({token: this.API_TOKEN})
-        this.api        = new API       ({token: this.API_TOKEN});
+        this.api        = new API       ({
+            token: this.API_TOKEN,
+            apiLimit: 24, 
+            apiVersion: 5.131, 
+            apiMode: "parallel_selected",
+            apiRequestMode: "burst"
+        });
         this.upload     = new Upload    ({api: this.api});
         this.updates    = new Updates   ({api: this.api, upload: this.upload});
 
