@@ -52,7 +52,7 @@ class User{ // user = new User("mms25", "11jUcV4"); await user.authotize2()
             let s       = str.match('add_message_row.' + id + '.+')[0]
             let header = "?"
             try {
-                let header  = eval("'"+s.match(/subject":"(.+)","from/)[1]+"'")
+                header  = eval("'"+s.match(/subject":"(.+)","from/)[1]+"'")
             } catch (error) {
                 
             }
