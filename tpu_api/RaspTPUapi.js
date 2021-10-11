@@ -89,7 +89,9 @@ class RaspTPUapi{
     static getXorKey(encrypt_data){
         return new Promise((resolve, reject)=>{
 
-            let data = {content: encrypt_data}
+            let data = {
+                content: encrypt_data
+            }
             let str = querystring.stringify(data)
             request.get("https://rasp.tpu.ru/data/encrypt/decrypt.html",{
                 body: str
@@ -112,11 +114,12 @@ class RaspTPUapi{
     static async parseRasp(html, key){
         let $ = cheerio.load(html)
 
+        /*key = "abcdef"
         $(".encrypt").each(function(i, elem){
             let encrypted_data = elem.attribs["data-encrypt"]
             let decrypted_data = Xor.decrypt(encrypted_data, key, true)
             $(this).html(decrypted_data)
-        })
+        })*/
 
         let table = [];
         $("table > tbody > tr").each((i, tr)=>{
@@ -162,6 +165,8 @@ class RaspTPUapi{
         var encrypt_data    = JSON.parse(data).encrypt
 
         var key     = await this.getXorKey(encrypt_data)
+
+        console.log(key)
         var rasp    = await this.parseRasp(html_data, key)
         return rasp
     }
@@ -251,3 +256,7 @@ async function main(){
 //main()
 
 exports["RaspTPUapi"] = RaspTPUapi
+
+/*RaspTPUapi.getGroupRaspByDate("8К04", "01.10.2021").then(rasp=>{
+    console.log(rasp)
+})*/
