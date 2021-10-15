@@ -3,3 +3,9 @@ authenticator/private.pem
 authenticator/public.pem
 authenticator/new_private.pem
 authenticator/new_public.pem
+
+PRIVATE.pem
+PUBLIC.pem
+
+tpu_api/test.js
+tpu_api/test2.js
