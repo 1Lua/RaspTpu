@@ -114,41 +114,50 @@ class MailAgent{
         new Promise(async(resolve, reject)=>{
             let start = Date.now()
             for(let i = 0; i < this.work_queue.length; i++){
-                let user = this.work_queue[i]
-                let mail
-                try{ // попытка 
-                    mail = await user.getMail()
-                    if(!mail){
-                        throw "mail is undefined"
-                    }
-                }catch(err){
-                    console.log("err " + user.login, err)
-                    this.removeFromWorkQueue(user)
-                    this.addToLoginQueue(user)
-                    continue
-                }
-                if(user.user_data.messagecount){
-                    if(mail.messagecount > user.user_data.messagecount){ // сообщений стало больше
-                        let count   = mail.messagecount - user.user_data.messagecount
-                        if(count >= 5){ // если новых сообщений больше 5
-                            count = 5
+                let proms = []
+                for(let p = 0; p < config.parallel_request && i+p < this.work_queue; p++){
+                    proms.push(new Promise(async(resolve, reject)=>{
+                        let user = this.work_queue[i]
+                        let mail
+                        try{ // попытка 
+                            mail = await user.getMail()
+                            if(!mail){
+                                throw "mail is undefined"
+                            }
+                        }catch(err){
+                            console.log("err " + user.login, err)
+                            this.removeFromWorkQueue(user)
+                            this.addToLoginQueue(user)
+                            continue
                         }
-                        let new_mails   = []
-                        for(let i = 0; i < count; i++){
-                            new_mails.push(mail.mails[i])
+                        if(user.user_data.messagecount){
+                            if(mail.messagecount > user.user_data.messagecount){ // сообщений стало больше
+                                let count   = mail.messagecount - user.user_data.messagecount
+                                if(count >= 5){ // если новых сообщений больше 5
+                                    count = 5
+                                }
+                                let new_mails   = []
+                                for(let i = 0; i < count; i++){
+                                    new_mails.push(mail.mails[i])
+                                }
+                                accounter.updateUserInfo(user.user_data, {messagecount: mail.messagecount})
+                                user.user_data.messagecount = mail.messagecount
+                                this.onNewUserMails(user, new_mails.reverse())
+                            }else if(mail.messagecount < user.user_data.messagecount){ // сообщений стало менльше
+                                accounter.updateUserInfo(user.user_data, {messagecount: mail.messagecount})
+                                user.user_data.messagecount = mail.messagecount
+                            }
+                        }else{ // пользователь впервые проверяет почту или почта была обнулена
+                            await accounter.updateUserInfo(user.user_data, {messagecount: mail.messagecount})
+                            user.user_data.messagecount = mail.messagecount
                         }
-                        accounter.updateUserInfo(user.user_data, {messagecount: mail.messagecount})
-                        user.user_data.messagecount = mail.messagecount
-                        this.onNewUserMails(user, new_mails.reverse())
-                    }else if(mail.messagecount < user.user_data.messagecount){ // сообщений стало менльше
-                        accounter.updateUserInfo(user.user_data, {messagecount: mail.messagecount})
-                        user.user_data.messagecount = mail.messagecount
-                    }
-                }else{ // пользователь впервые проверяет почту или почта была обнулена
-                    await accounter.updateUserInfo(user.user_data, {messagecount: mail.messagecount})
-                    user.user_data.messagecount = mail.messagecount
+                        resolve()
+                    }))
+                    i++
                 }
+                Promise.all(proms)
             }
+
             console.log("time: ", Date.now()-start)
             this.checkmail_timeout = setTimeout(()=>{
                 this.checkMail()
