@@ -128,7 +128,7 @@ class MailAgent{
                             console.log("err " + user.login, err)
                             this.removeFromWorkQueue(user)
                             this.addToLoginQueue(user)
-                            continue
+                            resolve()
                         }
                         if(user.user_data.messagecount){
                             if(mail.messagecount > user.user_data.messagecount){ // сообщений стало больше
@@ -155,7 +155,7 @@ class MailAgent{
                     }))
                     i++
                 }
-                Promise.all(proms)
+                await Promise.all(proms)
             }
 
             console.log("time: ", Date.now()-start)
@@ -266,41 +266,54 @@ class MailAgent{
 
     async loginWhoInQueue(){
         while(this.login_queue.length > 0){
-            let user = this.login_queue.shift()
-            await user.authorize()
-            .then(res=>{ // Пользователь прошел авторизацию, добавляем в рабочую очередь
-                this.addToWorkQueue(user)
-            })
-            .catch(async (err)=>{
-                console.log(user.login, err)
-                switch(err){
-                    case "err login":{ // логин и пароль в бд неверный
-                        switch(user.user_data.type){
-                            
-                            case "VK":{
-                                //this.addToLoginQueue(user)
-                                /*try{
-                                    let vk_id = user.user_data.vk_id
-                                    await accounter.collection.updateOne({vk_id: user_data.vk_id},{
-                                        authorized          : false,
-                                        mail_notifications  : false
-                                    })
-                                    connector.sendPackageToListeners("vk_uncorrect_login",{vk_id: vk_id})
-                                    break
-                                }catch(err){
-                                    console.log(err)
-                                }*/
+            let proms = []
+            for(let i = 0; i < config.parallel_request; i++){
+                proms.push(new Promise(async(resolve, reject)=>{
+                    let user = this.login_queue.shift()
+                    await user.authorize()
+                    .then(res=>{ // Пользователь прошел авторизацию, добавляем в рабочую очередь
+                        this.addToWorkQueue(user)
+                        resolve()
+                    })
+                    .catch(async (err)=>{
+                        console.log(user.login, err)
+                        switch(err){
+                            case "err login":{ // логин и пароль в бд неверный
+                                switch(user.user_data.type){
+                                    
+                                    case "VK":{
+                                        //this.addToLoginQueue(user)
+                                        /*try{
+                                            let vk_id = user.user_data.vk_id
+                                            await accounter.collection.updateOne({vk_id: user_data.vk_id},{
+                                                authorized          : false,
+                                                mail_notifications  : false
+                                            })
+                                            connector.sendPackageToListeners("vk_uncorrect_login",{vk_id: vk_id})
+                                            break
+                                        }catch(err){
+                                            console.log(err)
+                                        }*/
+                                    }
+                                }
+
+                                break
+                            }
+                            case "no connect":{ // нет соединения с mail2.tpu.ru пользователь встает на авторизацию заново
+                                this.addToLoginQueue(user)
+                                break
                             }
                         }
+                        resolve()
+                    })
+                }))
 
-                        break
-                    }
-                    case "no connect":{ // нет соединения с mail2.tpu.ru пользователь встает на авторизацию заново
-                        this.addToLoginQueue(user)
-                        break
-                    }
+                if(this.login_queue.length == 0){
+                    break
                 }
-            })
+            }
+
+            await Promise.all(proms)
         }
     }
 
