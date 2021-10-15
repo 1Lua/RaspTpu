@@ -4,6 +4,8 @@ authenticator/public.pem
 authenticator/new_private.pem
 authenticator/new_public.pem
 
+mailer/config.json
+
 PRIVATE.pem
 PUBLIC.pem
 
