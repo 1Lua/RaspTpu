@@ -111,13 +111,13 @@ class MailAgent{
     async checkMail(){
         console.log("Проверка почты.", "work_queue: "+ this.work_queue.length)
         let int = 2000
-        new Promise(async(resolve, reject)=>{
+        new Promise(async(res, reject)=>{
             let start = Date.now()
-            for(let i = 0; i < this.work_queue.length; i++){
+            for(let i = 0; i < this.work_queue.length; i = i){
                 let proms = []
-                for(let p = 0; p < config.parallel_request && i+p < this.work_queue; p++){
+                for(let p = 0; p < config.parallel_request && (i+p) < this.work_queue.length; p++){
                     proms.push(new Promise(async(resolve, reject)=>{
-                        let user = this.work_queue[i]
+                        let user = this.work_queue[i+p]
                         let mail
                         try{ // попытка 
                             mail = await user.getMail()
@@ -153,9 +153,9 @@ class MailAgent{
                         }
                         resolve()
                     }))
-                    i++
                 }
                 await Promise.all(proms)
+                i = i + config.parallel_request
             }
 
             console.log("time: ", Date.now()-start)
